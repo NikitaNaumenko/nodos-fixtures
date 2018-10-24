@@ -1,0 +1,31 @@
+{
+  "name": "nodos-fixtures",
+  "version": "0.0.1",
+  "description": "Fixtures helper for nodos framework https://github.com/nodosjs/nodos",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NikitaNaumenko/nodos-fixtures.git"
+  },
+  "keywords": [
+    "nodos",
+    "nodos-fixtures"
+  ],
+  "author": "Nikita Naumenko naumenkoniki@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NikitaNaumenko/nodos-fixtures/issues"
+  },
+  "homepage": "https://github.com/NikitaNaumenko/nodos-fixtures#readme",
+  "devDependencies": {
+    "eslint": "^5.7.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-babel": "^5.2.1",
+    "eslint-plugin-flowtype": "^3.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^21.26.1"
+  }
+}
