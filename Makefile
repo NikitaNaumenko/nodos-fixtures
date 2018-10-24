@@ -1,4 +1,4 @@
 setup:
 	npm install
 lint:
-	npm eslint .
+	./node_modules/.bin/eslint
