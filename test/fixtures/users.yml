@@ -1,0 +1,11 @@
+fixtures:
+    - User:
+        id: 1
+        firstName: 'Nodos'
+        lastName: 'Nodos'
+        age: 24
+    - User:
+        id: 2
+        firstName: 'Rails'
+        lastName: 'Rails'
+        age: 35
