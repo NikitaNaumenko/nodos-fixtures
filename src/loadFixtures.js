@@ -1,4 +1,3 @@
-import { Connection, Repository } from 'typeorm';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 
@@ -11,7 +10,7 @@ export default async (name, dbConnection) => {
       await dbConnection
         .createQueryBuilder()
         .insert()
-        .into(entityName)
+        .into(entityName.toLowerCase())
         .values(entityData)
         .execute();
     });
