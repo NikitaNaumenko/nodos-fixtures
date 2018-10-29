@@ -1,5 +1,6 @@
 import { createConnection } from 'typeorm';
 import loadFixtures from './loadFixtures';
+import dropFixtures from './dropFixtures';
 
 
 createConnection({
@@ -15,5 +16,6 @@ createConnection({
   ],
 
 }).then((connection) => {
-  console.log(loadFixtures('users', connection));
+  dropFixtures(connection);
+  loadFixtures(connection);
 }).catch(error => console.log(error));
