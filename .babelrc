@@ -1,0 +1,17 @@
+{
+    "presets": [
+        "@babel/preset-flow",
+        [
+            "@babel/preset-env",
+            {
+                "targets": {
+                    "node": "current"
+                }
+            }
+        ]
+    ],
+    "plugins": [
+        ["@babel/plugin-proposal-decorators", { "legacy": true }],
+        ["transform-class-properties"]
+      ]
+}
