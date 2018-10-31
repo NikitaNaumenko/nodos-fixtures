@@ -6,3 +6,7 @@ second:
   firstName: 'Rails'
   lastName: 'Rails'
   age: 35
+third:
+  firstName: 'Node'
+  lastName: 'Js'
+  age: 30
