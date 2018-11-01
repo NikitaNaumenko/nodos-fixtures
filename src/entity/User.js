@@ -1,18 +1,15 @@
-import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity()
-export class User {
-
+export default @Entity() class User {
     @PrimaryGeneratedColumn()
     id = undefined
 
-    @Column("varchar")
-    firstName = "";
+    @Column('varchar')
+    firstName = '';
 
-    @Column("text")
-    lastName = "";
+    @Column('text')
+    lastName = '';
 
-    @Column("int")
+    @Column('int')
     age = undefined;
-
 }
