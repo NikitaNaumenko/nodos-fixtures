@@ -5,14 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
-    "eslint": "eslint",
+    "eslint": "eslint . ",
     "babel-node": "babel-node",
     "start": "babel src --out-dir dist && node dist/index.js"
   },
   "jest": {
-    "testPathIgnorePatterns": [
-      "/node_modules/"
-    ]
+    "testEnvironment": "node"
   },
   "repository": {
     "type": "git",
@@ -22,9 +20,6 @@
     "nodos",
     "nodos-fixtures"
   ],
-  "jest": {
-    "testEnvironment": "node"
-  },
   "author": "Nikita Naumenko naumenkoniki@gmail.com",
   "license": "ISC",
   "bugs": {
@@ -34,23 +29,18 @@
   "devDependencies": {
     "babel-plugin-transform-class-properties": "^6.24.1",
     "@babel/plugin-proposal-decorators": "^7.1.2",
-    "@babel/cli": "^7.0.0",
-    "@babel/core": "^7.0.1",
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
     "@babel/node": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
-    "@babel/preset-flow": "^7.0.0",
+    "@babel/preset-env": "^7.1.0",
     "babel-core": "^7.0.0-0",
-    "babel-eslint": "^9.0.0",
-    "eslint": "^5.5.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-babel": "^5.2.0",
-    "eslint-plugin-flowtype": "^2.50.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.8.0",
     "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jest": "^21.22.0",
-    "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-babel": "^5.2.1",
+    "eslint-plugin-jest": "^21.26.2",
     "babel-jest": "^23.6.0",
-    "babel-plugin-dynamic-import-node": "^2.2.0",
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0"
   },

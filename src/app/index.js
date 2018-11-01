@@ -29,7 +29,6 @@ const getPreparedData = (dbConnection, pathToFixtures) => async (action) => {
     const fileData = await readFile(resolve(pathToFixtures, file), 'utf8');
     const yamlData = safeLoad(fileData);
     const entityName = basename(file, '.yml');
-    console.log(entityName);
 
     return entityName && action(dbConnection, entityName, Object.values(yamlData));
   }));
