@@ -1,5 +1,6 @@
 {
     "name": "default",
+    "schema": "test_schema",
     "type": "postgres",
     "host": "localhost",
     "port": 5432,
