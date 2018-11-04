@@ -22,12 +22,18 @@ const load = (connection, entityName, data) => Promise.all(
     .execute()),
 );
 
+const convertLabels = yamlData => Object.keys(yamlData).reduce((acc, label) => {
+  const replacedObject = JSON.parse(JSON.stringify(yamlData[label]).replace('$LABEL', label));
+  acc[label] = replacedObject;
+  return acc;
+}, {});
+
 const getPreparedData = (dbConnection, pathToFixtures) => async (action) => {
   const fixturesFiles = await readdir(pathToFixtures);
   const ymlFiles = fixturesFiles.filter(name => extname(name) === '.yml');
   await Promise.all(ymlFiles.map(async (file) => {
     const fileData = await readFile(resolve(pathToFixtures, file), 'utf8');
-    const yamlData = safeLoad(fileData);
+    const yamlData = convertLabels(safeLoad(fileData));
     const entityName = basename(file, '.yml');
 
     return entityName && action(dbConnection, entityName, Object.values(yamlData));

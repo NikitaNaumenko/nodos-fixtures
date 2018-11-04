@@ -1,6 +1,6 @@
 first:
   firstName: 'Nodos'
-  lastName: 'Nodos'
+  lastName: $LABEL
   age: 24
 second:
   firstName: 'Rails'
