@@ -1,0 +1,6 @@
+profile_1:
+  name: $LABEL
+  user: 1
+profile_2:
+  name: $LABEL
+  user: 2
