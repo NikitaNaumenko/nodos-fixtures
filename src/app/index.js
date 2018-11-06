@@ -5,7 +5,7 @@ import { promises } from 'fs';
 
 const { readdir, readFile } = promises;
 
-const drop = (connection, entityName) => connection
+const drop = (connection, { entityName }) => connection
   .createQueryBuilder()
   .delete()
   .from(entityName)
@@ -13,40 +13,48 @@ const drop = (connection, entityName) => connection
   .execute();
 
 
-const load = (connection, entityName, data) => Promise.all(
-  data.map(value => connection
-    .createQueryBuilder()
-    .insert()
-    .into(entityName)
-    .values(value)
-    .execute()),
-);
-
-const convertLabels = yamlData => Object.keys(yamlData).reduce((acc, label) => {
-  const replacedObject = JSON.parse(JSON.stringify(yamlData[label]).replace('$LABEL', label));
-  acc[label] = replacedObject;
-  return acc;
-}, {});
-
-const getPreparedData = (dbConnection, pathToFixtures) => async (action) => {
-  const fixturesFiles = await readdir(pathToFixtures);
-  const ymlFiles = fixturesFiles.filter(name => extname(name) === '.yml');
-  await Promise.all(ymlFiles.map(async (file) => {
-    const fileData = await readFile(resolve(pathToFixtures, file), 'utf8');
-    const yamlData = convertLabels(safeLoad(fileData));
-    const entityName = basename(file, '.yml');
-
-    return entityName && action(dbConnection, entityName, Object.values(yamlData));
-  }));
+const load = async (connection, entityName, data) => {
+  // eslint-disable-next-line
+  for await (const value of data) {
+    connection
+      .createQueryBuilder()
+      .insert()
+      .into(entityName)
+      .values(value)
+      .execute();
+  }
 };
 
+const convertLabels = yamlData => Object.entries(yamlData)
+  .reduce((acc, [label, value]) => {
+    console.log(label, value);
+    const replacedObject = JSON.parse(JSON.stringify(value).replace('$LABEL', label));
+    return [...acc, replacedObject];
+  }, []);
+
+const getPreparedData = async (pathToFixtures) => {
+  const fixturesFiles = await readdir(pathToFixtures);
+  const ymlFiles = fixturesFiles.filter(name => extname(name) === '.yml');
+  return Promise.all(ymlFiles.map(async (fileName) => {
+    const entityName = basename(fileName, '.yml');
+    if (!entityName) {
+      return;
+    }
+
+    const fileData = await readFile(resolve(pathToFixtures, fileName), 'utf8');
+    const yamlData = convertLabels(safeLoad(fileData));
+
+    return { entityName, seedData: Object.values(yamlData) };
+  }));
+};
 export default async (config, pathToFixtures) => {
   let connection;
   try {
     connection = await createConnection(config);
-    const preparedData = getPreparedData(connection, pathToFixtures);
-    await preparedData(drop);
-    await preparedData(load);
+    const preparedData = await getPreparedData(pathToFixtures);
+    console.log(preparedData);
+    await drop(connection, preparedData);
+    // await preparedData(load);
   } catch (error) {
     console.error(error);
   } finally {
