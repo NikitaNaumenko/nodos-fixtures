@@ -2,6 +2,7 @@ import { createConnection } from 'typeorm';
 import { resolve, basename, extname } from 'path';
 import { safeLoad } from 'js-yaml';
 import { promises } from 'fs';
+import User from '../entity/User';
 
 const { readdir, readFile } = promises;
 
@@ -51,6 +52,9 @@ export default async (config, pathToFixtures) => {
   let connection;
   try {
     connection = await createConnection(config);
+    const userRepository = connection.getRepository(User);
+    const { metadata } = userRepository;
+    console.log(metadata.relations);
     const preparedData = await getPreparedData(pathToFixtures);
     console.log(preparedData);
     await drop(connection, preparedData);

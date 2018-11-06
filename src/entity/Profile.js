@@ -1,5 +1,5 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn,
+  Entity, PrimaryGeneratedColumn, Column, OneToOne,
 } from 'typeorm';
 import User from './User';
 
@@ -11,7 +11,6 @@ export default @Entity() class Profile {
     name = '';
 
     // eslint-disable-next-line
-    @OneToOne(type => User)
-    @JoinColumn()
+    @OneToOne(type => User, user => user.profile)
     user = '';
 }
