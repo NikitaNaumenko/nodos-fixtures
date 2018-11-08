@@ -5,12 +5,12 @@ import User from './User';
 
 export default @Entity() class Profile {
     @PrimaryGeneratedColumn()
-    id = undefined
+    id
 
     @Column('varchar')
-    name = '';
+    name
 
     // eslint-disable-next-line
     @OneToOne(type => User, user => user.profile)
-    user = '';
+    user
 }

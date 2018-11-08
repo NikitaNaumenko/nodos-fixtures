@@ -4,3 +4,6 @@ profile_1:
 profile_2:
   name: $LABEL
   user: 2
+profile_3:
+  name: $LABEL
+  user: 3
