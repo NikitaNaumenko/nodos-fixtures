@@ -1,9 +1,9 @@
 profile_1:
   name: $LABEL
-  user: 1
+  user: first
 profile_2:
   name: $LABEL
-  user: 2
+  user: second
 profile_3:
   name: $LABEL
-  user: 3
+  user: third

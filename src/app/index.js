@@ -2,9 +2,27 @@ import { createConnection } from 'typeorm';
 import { resolve, basename, extname } from 'path';
 import { safeLoad } from 'js-yaml';
 import { promises } from 'fs';
-// import User from '../entity/User';
+import entities from '../entity';
 
 const { readdir, readFile } = promises;
+
+const sortData = (connection, arr) => arr
+  .reduce((acc, value) => {
+    const { metadata } = connection.getRepository(entities[value.entityName]);
+    const [relations] = metadata.relations;
+    if (!relations) {
+      acc.simpleData.push(value);
+      return acc;
+    }
+    const role = relations.isWithJoinColumn ? 'owner' : 'slave';
+    acc.relatedData[role].push(value);
+    // console.log(Object.keys(relations));
+    // console.log(relations.propertyName);
+    // console.log(relations.isOneToOneOwner);
+    // console.log(relations.isWithJoinColumn);
+    return acc;
+  }, { simpleData: [], relatedData: { owner: [], slave: [] } });
+
 
 const drop = connection => ({ entityName }) => connection
   .createQueryBuilder()
@@ -13,9 +31,7 @@ const drop = connection => ({ entityName }) => connection
   .where()
   .execute();
 
-
-const load = connection => async ({ entityName, seedData }) => {
-  console.log(entityName, seedData);
+const loadSimple = connection => async ({ entityName, seedData }) => {
   await connection
     .createQueryBuilder()
     .insert()
@@ -23,6 +39,32 @@ const load = connection => async ({ entityName, seedData }) => {
     .values(seedData)
     .execute();
   console.log('data is saved');
+};
+
+const loadRelated = async (connection, { owner, slave }) => {
+  await Promise.all(owner.map(async (ownerEl) => {
+    const ownerRepo = connection.getRepository(entities[ownerEl.entityName]);
+    const [relations] = ownerRepo.metadata.relations;
+    const { propertyName } = relations;
+    const { seedData: slaveSeed } = slave.find(({ entityName }) => entityName === propertyName);
+    const slaveDataToSave = slaveSeed.map(el => Object.entries(el)
+      .reduce((acc, [key, val]) => {
+        acc[key] = val;
+        return acc;
+      }, new entities[propertyName]()));
+    await Promise.all(slaveDataToSave.map(el => connection.manager.save(el)));
+    const ownerDataToSave = ownerEl.seedData.map((el, index) => Object.entries(el)
+      .reduce((acc, [key, val]) => {
+        if (key === propertyName) {
+          acc[key] = slaveDataToSave[index];
+          return acc;
+        }
+        acc[key] = val;
+        return acc;
+      }, new entities[ownerEl.entityName]()));
+
+    await Promise.all(ownerDataToSave.map(el => connection.manager.save(el)));
+  }));
 };
 
 const convertLabels = yamlData => Object.entries(yamlData)
@@ -47,13 +89,12 @@ export default async (config, pathToFixtures) => {
   let connection;
   try {
     connection = await createConnection(config);
-    // const userRepository = connection.getRepository(User);
-    // const { metadata } = userRepository;
-    // console.log(metadata.relations);
     const preparedData = await getPreparedData(pathToFixtures);
-    // console.log(preparedData);
     await Promise.all(preparedData.map(drop(connection)));
-    await Promise.all(preparedData.map(load(connection)));
+    const { simpleData, relatedData } = sortData(connection, preparedData);
+    // console.log(relatedData);
+    await Promise.all(simpleData.map(loadSimple(connection)));
+    await loadRelated(connection, relatedData);
   } catch (error) {
     console.error(error);
   } finally {
