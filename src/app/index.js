@@ -16,13 +16,8 @@ const sortData = (connection, arr) => arr
     }
     const role = relations.isWithJoinColumn ? 'owner' : 'slave';
     acc.relatedData[role].push(value);
-    // console.log(Object.keys(relations));
-    // console.log(relations.propertyName);
-    // console.log(relations.isOneToOneOwner);
-    // console.log(relations.isWithJoinColumn);
     return acc;
   }, { simpleData: [], relatedData: { owner: [], slave: [] } });
-
 
 const drop = connection => ({ entityName }) => connection
   .createQueryBuilder()
@@ -35,28 +30,29 @@ const loadSimple = connection => async ({ entityName, seedData }) => connection
   .createQueryBuilder()
   .insert()
   .into(entityName)
-  .values(seedData)
+  .values(Object.values(seedData))
   .execute();
 
 const loadRelated = async (connection, { owner, slave }) => {
   await Promise.all(owner.map(async (ownerEl) => {
     const ownerRepo = connection.getRepository(entities[ownerEl.entityName]);
-    const [relations] = ownerRepo.metadata.relations;
-    const { propertyName } = relations;
+    const [{ propertyName }] = ownerRepo.metadata.relations;
     const { seedData: slaveSeed } = slave.find(({ entityName }) => entityName === propertyName);
-    const slaveDataToSave = slaveSeed.map(el => Object.entries(el)
+    const slaveDataToSave = Object.entries(slaveSeed).reduce((acc, [slaveKey, el]) => {
+      const newVal = Object.entries(el)
+        .reduce((slaveEntity, [key, val]) => {
+        // eslint-disable-next-line
+          slaveEntity[key] = val;
+          return slaveEntity;
+        }, new entities[propertyName]());
+      return { ...acc, [slaveKey]: newVal };
+    }, {});
+    await Promise.all(Object.values(slaveDataToSave).map(el => connection.manager.save(el)));
+    const ownerSeed = Object.values(ownerEl.seedData);
+    const ownerDataToSave = ownerSeed.map(el => Object.entries(el)
       .reduce((acc, [key, val]) => {
-        acc[key] = val;
-        return acc;
-      }, new entities[propertyName]()));
-    await Promise.all(slaveDataToSave.map(el => connection.manager.save(el)));
-    const ownerDataToSave = ownerEl.seedData.map((el, index) => Object.entries(el)
-      .reduce((acc, [key, val]) => {
-        if (key === propertyName) {
-          acc[key] = slaveDataToSave[index];
-          return acc;
-        }
-        acc[key] = val;
+        const newEl = (key === propertyName) ? slaveDataToSave[val] : val;
+        acc[key] = newEl;
         return acc;
       }, new entities[ownerEl.entityName]()));
 
@@ -66,10 +62,9 @@ const loadRelated = async (connection, { owner, slave }) => {
 
 const convertLabels = yamlData => Object.entries(yamlData)
   .reduce((acc, [label, value]) => {
-    // console.log(label, value);
     const replacedObject = JSON.parse(JSON.stringify(value).replace('$LABEL', label));
-    return [...acc, replacedObject];
-  }, []);
+    return { ...acc, [label]: replacedObject };
+  }, {});
 
 const getPreparedData = async (pathToFixtures) => {
   const fixturesFiles = await readdir(pathToFixtures);
@@ -78,22 +73,22 @@ const getPreparedData = async (pathToFixtures) => {
     const entityName = basename(fileName, '.yml');
     const fileData = await readFile(resolve(pathToFixtures, fileName), 'utf8');
     const yamlData = convertLabels(safeLoad(fileData));
-
-    return { entityName, seedData: Object.values(yamlData) };
+    return { entityName, seedData: yamlData };
   }));
 };
+
 export default async (config, pathToFixtures) => {
   let connection;
   try {
     connection = await createConnection(config);
     const preparedData = await getPreparedData(pathToFixtures);
+    console.log(preparedData);
     const { simpleData, relatedData } = sortData(connection, preparedData);
 
     await Promise.all(simpleData.map(drop(connection)));
     await Promise.all(relatedData.owner.map(drop(connection)));
     await Promise.all(relatedData.slave.map(drop(connection)));
 
-    // console.log(relatedData);
     await Promise.all(simpleData.map(loadSimple(connection)));
     await loadRelated(connection, relatedData);
   } catch (error) {
