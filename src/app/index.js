@@ -31,15 +31,12 @@ const drop = connection => ({ entityName }) => connection
   .where()
   .execute();
 
-const loadSimple = connection => async ({ entityName, seedData }) => {
-  await connection
-    .createQueryBuilder()
-    .insert()
-    .into(entityName)
-    .values(seedData)
-    .execute();
-  console.log('data is saved');
-};
+const loadSimple = connection => async ({ entityName, seedData }) => connection
+  .createQueryBuilder()
+  .insert()
+  .into(entityName)
+  .values(seedData)
+  .execute();
 
 const loadRelated = async (connection, { owner, slave }) => {
   await Promise.all(owner.map(async (ownerEl) => {
@@ -90,8 +87,12 @@ export default async (config, pathToFixtures) => {
   try {
     connection = await createConnection(config);
     const preparedData = await getPreparedData(pathToFixtures);
-    await Promise.all(preparedData.map(drop(connection)));
     const { simpleData, relatedData } = sortData(connection, preparedData);
+
+    await Promise.all(simpleData.map(drop(connection)));
+    await Promise.all(relatedData.owner.map(drop(connection)));
+    await Promise.all(relatedData.slave.map(drop(connection)));
+
     // console.log(relatedData);
     await Promise.all(simpleData.map(loadSimple(connection)));
     await loadRelated(connection, relatedData);
