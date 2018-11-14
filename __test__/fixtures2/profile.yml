@@ -1,0 +1,9 @@
+profile_1:
+  name: $LABEL
+  user: first
+profile_2:
+  name: $LABEL
+  user: second
+profile_3:
+  name: $LABEL
+  user: third

@@ -1,8 +1,0 @@
-first:
-  firstName: 'Nodos'
-  lastName: $LABEL
-  age: 24
-second:
-  firstName: 'Rails'
-  lastName: 'Rails'
-  age: 35

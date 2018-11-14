@@ -1,12 +1,15 @@
 first:
   firstName: 'Nodos'
-  lastName: 'Nodos'
+  lastName: $LABEL
   age: 24
+  profile: profile_1
 second:
   firstName: 'Rails'
   lastName: 'Rails'
   age: 35
+  profile: profile_2
 third:
   firstName: 'Node'
   lastName: 'Js'
   age: 30
+  profile: profile_3
