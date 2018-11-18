@@ -19,7 +19,24 @@ $ make test
 make lint
 ```
 
-### Run load fixtures:
+### Configuration
+
+Setup your config for database in `__test__/fixures/config.json`:
+```json
+{
+    "name": "default",
+    "schema": "test_schema",
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "test",
+    "password": "test",
+    "database": "test",
+    "synchronize": true
+}
+```
+
+And load fixtures: 
 ```
 make run
 ```
