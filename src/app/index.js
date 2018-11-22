@@ -2,11 +2,10 @@ import { createConnection } from 'typeorm';
 import { resolve, basename, extname } from 'path';
 import { safeLoad } from 'js-yaml';
 import { promises } from 'fs';
-import entities from '../entity';
 
 const { readdir, readFile } = promises;
 
-const sortData = (connection, arr) => arr
+const sortData = (connection, entities, arr) => arr
   .reduce((acc, value) => {
     const { metadata } = connection.getRepository(entities[value.entityName]);
     const [relations] = metadata.relations;
@@ -33,7 +32,7 @@ const loadSimple = connection => async ({ entityName, seedData }) => connection
   .values(Object.values(seedData))
   .execute();
 
-const loadRelated = async (connection, { owner, slave }) => {
+const loadRelated = async (connection, entities, { owner, slave }) => {
   await Promise.all(owner.map(async (ownerEl) => {
     const ownerRepo = connection.getRepository(entities[ownerEl.entityName]);
     const [{ propertyName }] = ownerRepo.metadata.relations;
@@ -77,20 +76,20 @@ const getPreparedData = async (pathToFixtures) => {
   }));
 };
 
-export default async (config, pathToFixtures) => {
+export default async (config, pathToFixtures, entities) => {
   let connection;
   try {
     connection = await createConnection(config);
     const preparedData = await getPreparedData(pathToFixtures);
     console.log(preparedData);
-    const { simpleData, relatedData } = sortData(connection, preparedData);
+    const { simpleData, relatedData } = sortData(connection, entities, preparedData);
 
     await Promise.all(simpleData.map(drop(connection)));
     await Promise.all(relatedData.owner.map(drop(connection)));
     await Promise.all(relatedData.slave.map(drop(connection)));
 
     await Promise.all(simpleData.map(loadSimple(connection)));
-    await loadRelated(connection, relatedData);
+    await loadRelated(connection, entities, relatedData);
   } catch (error) {
     console.error(error);
   } finally {
