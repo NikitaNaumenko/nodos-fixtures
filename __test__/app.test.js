@@ -1,14 +1,19 @@
 import path from 'path';
 import { createConnection } from 'typeorm';
 import app from '../src/app';
-import User from '../src/entity/User';
-import Simple from '../src/entity/Simple';
-import Profile from '../src/entity/Profile';
-
+import User from './fixtures/entity/User';
+import Simple from './fixtures/entity/Simple';
+import Profile from './fixtures/entity/Profile';
 import baseConfig from './fixtures/config.json';
 
-const entities = [path.resolve(__dirname, '..', 'src/entity/*.js')];
-const config = { ...baseConfig, entities };
+const entities = {
+  profile: Profile,
+  user: User,
+  simple: Simple,
+};
+
+const entitiesPath = [path.resolve(__dirname, 'fixtures', 'entity/*.js')];
+const config = { ...baseConfig, entities: entitiesPath };
 
 describe('App test', () => {
   let connection;
@@ -18,7 +23,7 @@ describe('App test', () => {
   });
 
   it('Test app', async () => {
-    await app(config, path.resolve(__dirname, 'fixtures'));
+    await app(config, path.resolve(__dirname, 'fixtures'), entities);
 
     connection = await createConnection({ ...config, name: 'test' });
     const simpleData = await connection.getRepository(Simple).find();
@@ -27,7 +32,7 @@ describe('App test', () => {
   });
 
   it('Test app with adding from fixtures2', async () => {
-    await app(config, path.resolve(__dirname, 'fixtures2'));
+    await app(config, path.resolve(__dirname, 'fixtures2'), entities);
 
     connection = await createConnection({ ...config, name: 'test' });
     const users = await connection.getRepository(User).find();
